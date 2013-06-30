@@ -5,8 +5,7 @@
   <version>0.1-SNAPSHOT</version>
   <name>Selenium</name>
   <build>
-    <sourceDirectory>src/main</sourceDirectory>
-  <plugins>
+    <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -72,6 +71,11 @@
       <groupId>org.jcraft</groupId>
       <artifactId>jorbis</artifactId>
       <version>0.0.17</version>
+    </dependency>
+    <dependency>
+    	<groupId>de.schlichtherle.truezip</groupId>
+    	<artifactId>truezip-driver-file</artifactId>
+    	<version>7.7.2</version>
     </dependency>
   </dependencies>
 </project>
