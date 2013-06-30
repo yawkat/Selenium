@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Selenium, Minecraft texture pack viewer and editor
+ * Selenium, Minecraft resource pack viewer and editor
  * 
  * Copyright (C) 2013  Jonas Konrad
  * 
