@@ -22,6 +22,7 @@ import static at.yawk.selenium.Strings.t;
 
 import java.io.File;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -52,8 +53,22 @@ public class Selenium {
             e.printStackTrace();
         }
         
+        File rootFile;
+        if (args.length == 1) {
+            rootFile = new File(args[0]);
+        } else {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                rootFile = chooser.getSelectedFile();
+            } else {
+                System.exit(-1);
+                return;
+            }
+        }
+        
         JFrame test = new JFrame(t("Selenium"));
-        test.add(new SeleniumSuite(new ResourceTree(new TrueZipFileSystem(new File(args[0]).getAbsoluteFile()))));
+        test.add(new SeleniumSuite(new ResourceTree(new TrueZipFileSystem(rootFile.getAbsoluteFile()))));
         test.pack();
         test.setExtendedState(test.getExtendedState() | JFrame.MAXIMIZED_BOTH);
         test.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
