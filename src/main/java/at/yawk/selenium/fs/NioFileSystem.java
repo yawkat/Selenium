@@ -23,18 +23,20 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ServiceConfigurationError;
 import java.util.WeakHashMap;
 
 import com.google.common.collect.Sets;
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TFileInputStream;
-import de.schlichtherle.truezip.file.TFileOutputStream;
 
-public class TrueZipFileSystem implements FileSystem, Closeable {
+public class NioFileSystem implements FileSystem, Closeable {
     private static final Collection<Closeable> closables = Sets.newSetFromMap(new WeakHashMap<Closeable, Boolean>());
     
-    private final TFile file;
+    private final Path file;
     private File buffered;
     
     static {
@@ -51,56 +53,58 @@ public class TrueZipFileSystem implements FileSystem, Closeable {
         }));
     }
     
-    private TrueZipFileSystem(TFile file) {
-        this.file = file;
+    public NioFileSystem(Path path) {
+        this.file = path;
         closables.add(this);
-    }
-    
-    public TrueZipFileSystem(File file) {
-        this(new TFile(file));
     }
     
     @Override
     public boolean isDirectory() {
-        return file.isDirectory();
+        try {
+            return Files.isDirectory(file);
+        } catch (ServiceConfigurationError e) {
+            e.printStackTrace();
+            return false;
+        }
     }
     
     @Override
     public boolean exists() {
-        return file.exists();
+        return Files.exists(file);
     }
     
     @Override
     public FileSystem[] listChildren() {
-        TFile[] files = file.listFiles();
-        if (files == null) {
-            return null;
+        try {
+            DirectoryStream<Path> files = Files.newDirectoryStream(file);
+            Collection<FileSystem> result = new ArrayList<FileSystem>();
+            for (Path path : files) {
+                result.add(new NioFileSystem(path));
+            }
+            return result.toArray(new FileSystem[result.size()]);
+        } catch (IOException e) {
+            return new FileSystem[0];
         }
-        FileSystem[] result = new FileSystem[files.length];
-        for (int i = 0; i < files.length; i++) {
-            result[i] = new TrueZipFileSystem(files[i]);
-        }
-        return result;
     }
     
     @Override
     public FileSystem getChild(String name) {
-        return new TrueZipFileSystem(new TFile(file, name));
+        return new NioFileSystem(file.resolve(name));
     }
     
     @Override
     public InputStream getInputStream() throws IOException {
-        return new TFileInputStream(file);
+        return Files.newInputStream(file);
     }
     
     @Override
     public OutputStream getOutputStream() throws IOException {
-        return new TFileOutputStream(file);
+        return Files.newOutputStream(file);
     }
     
     @Override
     public String getName() {
-        return file.getName();
+        return file.getFileName().toString();
     }
     
     @Override
@@ -122,7 +126,7 @@ public class TrueZipFileSystem implements FileSystem, Closeable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        TrueZipFileSystem other = (TrueZipFileSystem) obj;
+        NioFileSystem other = (NioFileSystem) obj;
         if (file == null) {
             if (other.file != null) {
                 return false;
@@ -136,11 +140,11 @@ public class TrueZipFileSystem implements FileSystem, Closeable {
     @Override
     public File getBuffered() throws IOException {
         if (buffered == null) {
-            if (file.getTopLevelArchive() == null) {
-                buffered = file;
-            } else {
+            try {
+                buffered = file.toFile();
+            } catch (UnsupportedOperationException e) {
                 buffered = File.createTempFile("tmp", getName());
-                file.cp(buffered);
+                Files.copy(file, buffered.toPath());
             }
         }
         return buffered;
@@ -148,7 +152,7 @@ public class TrueZipFileSystem implements FileSystem, Closeable {
     
     @Override
     public void clearBuffer() {
-        if (buffered != file && buffered != null) {
+        if (buffered != null && !buffered.toPath().equals(file)) {
             buffered.delete();
             buffered = null;
         }
