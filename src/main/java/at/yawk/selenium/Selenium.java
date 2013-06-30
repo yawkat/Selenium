@@ -18,6 +18,8 @@
  ******************************************************************************/
 package at.yawk.selenium;
 
+import static at.yawk.selenium.Strings.t;
+
 import java.io.File;
 
 import javax.swing.JFrame;
@@ -50,7 +52,7 @@ public class Selenium {
             e.printStackTrace();
         }
         
-        JFrame test = new JFrame("Selenium");
+        JFrame test = new JFrame(t("Selenium"));
         test.add(new SeleniumSuite(new ResourceTree(new TrueZipFileSystem(new File(args[0]).getAbsoluteFile()))));
         test.pack();
         test.setExtendedState(test.getExtendedState() | JFrame.MAXIMIZED_BOTH);
