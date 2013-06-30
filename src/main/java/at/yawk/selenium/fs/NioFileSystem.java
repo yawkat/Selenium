@@ -23,9 +23,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ServiceConfigurationError;
@@ -141,10 +143,12 @@ public class NioFileSystem implements FileSystem, Closeable {
     public File getBuffered() throws IOException {
         if (buffered == null) {
             try {
-                buffered = file.toFile();
-            } catch (UnsupportedOperationException e) {
+                File f = file.toFile();
+                f.toURI().toURL();
+                buffered = f;
+            } catch (UnsupportedOperationException | MalformedURLException e) {
                 buffered = File.createTempFile("tmp", getName());
-                Files.copy(file, buffered.toPath());
+                Files.copy(file, buffered.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
         }
         return buffered;
