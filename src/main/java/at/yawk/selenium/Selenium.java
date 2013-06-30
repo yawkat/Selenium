@@ -22,7 +22,6 @@ import static at.yawk.selenium.Strings.t;
 
 import java.io.File;
 
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -34,6 +33,7 @@ import at.yawk.selenium.resourcepack.types.IcnsType;
 import at.yawk.selenium.resourcepack.types.ImageType;
 import at.yawk.selenium.resourcepack.types.PropertyType;
 import at.yawk.selenium.resourcepack.types.Sound3dType;
+import at.yawk.selenium.ui.ResourcePackOpener;
 import at.yawk.selenium.ui.SeleniumSuite;
 
 public class Selenium {
@@ -58,11 +58,8 @@ public class Selenium {
         if (args.length == 1) {
             rootFile = new File(args[0]);
         } else {
-            JFileChooser chooser = new JFileChooser();
-            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                rootFile = chooser.getSelectedFile();
-            } else {
+            rootFile = ResourcePackOpener.selectResourcePack();
+            if (rootFile == null) {
                 System.exit(-1);
                 return;
             }
