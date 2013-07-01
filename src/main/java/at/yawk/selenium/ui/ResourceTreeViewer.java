@@ -24,7 +24,9 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -48,13 +50,13 @@ public class ResourceTreeViewer extends JPanel {
     
     public ResourceTreeViewer(ResourceTree... trees) {
         this.setTrees(trees);
-        init();
+        setLayout(new BorderLayout());
         setPreferredSize(new Dimension(350, -1));
+        init();
     }
     
     private void init() {
         removeAll();
-        setLayout(new BorderLayout());
         if (getTrees().length == 0) {
             // TODO message
         } else {
@@ -122,6 +124,7 @@ public class ResourceTreeViewer extends JPanel {
             tree.setShowsRootHandles(true);
             tree.setRootVisible(false);
         }
+        validate();
     }
     
     private static void addRecursive(ResourceTree tree, FileSystem s, MutableTreeNode node) {
@@ -139,6 +142,19 @@ public class ResourceTreeViewer extends JPanel {
     }
     
     public void setTrees(ResourceTree... trees) {
+        // filter duplicates while keeping order
+        List<ResourceTree> treeList = new ArrayList<>();
+        for (ResourceTree tree : trees) {
+            if (!treeList.contains(tree)) {
+                treeList.add(tree);
+            }
+        }
+        trees = treeList.toArray(new ResourceTree[treeList.size()]);
+        
+        if (Arrays.equals(this.trees, trees)) {
+            return;
+        }
+        
         this.trees = trees;
         init();
     }

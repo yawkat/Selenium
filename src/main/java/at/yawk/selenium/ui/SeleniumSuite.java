@@ -25,7 +25,9 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -34,6 +36,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -41,6 +45,8 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.Border;
 
+import at.yawk.selenium.fs.NioFileSystem;
+import at.yawk.selenium.fs.Zip;
 import at.yawk.selenium.resourcepack.PreviewCache;
 import at.yawk.selenium.resourcepack.Resource;
 import at.yawk.selenium.resourcepack.ResourceTree;
@@ -53,6 +59,7 @@ public class SeleniumSuite extends JPanel {
     
     private final ResourceTreeViewer tree;
     private JTabbedPane resourceEditor = new JTabbedPane();
+    private JMenuBar menu;
     private JSplitPane center = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true);
     
     public SeleniumSuite(ResourceTree... trees) {
@@ -68,6 +75,27 @@ public class SeleniumSuite extends JPanel {
                 addEditor(resource);
             }
         });
+        
+        menu = new JMenuBar();
+        JMenu file = new JMenu(t("File"));
+        {
+            JMenuItem open = new JMenuItem(new AbstractAction(t("Open Resource Pack...")) {
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    File f = ResourcePackOpener.selectResourcePack();
+                    if (f != null) {
+                        ResourceTree[] trees = Arrays.copyOf(tree.getTrees(), tree.getTrees().length + 1);
+                        trees[trees.length - 1] = new ResourceTree(new NioFileSystem(Zip.toPath(f)));
+                        setResourceTrees(trees);
+                    }
+                }
+            });
+            file.add(open);
+        }
+        menu.add(file);
+        add(menu, BorderLayout.PAGE_START);
     }
     
     public void setResourceTrees(ResourceTree... trees) {
@@ -79,7 +107,9 @@ public class SeleniumSuite extends JPanel {
         JComponent component;
         Icon icon = null;
         if (type == null) {
-            component = new JLabel("Unknown file type");
+            component = new JLabel(t("Unknown file format"));
+            ((JLabel) component).setHorizontalAlignment(JLabel.CENTER);
+            component.setFont(component.getFont().deriveFont(30F));
             icon = null;
         } else {
             try {
@@ -126,7 +156,7 @@ public class SeleniumSuite extends JPanel {
                 public void mousePressed(MouseEvent e) {
                     maybeShowPopup(e);
                 }
-
+                
                 @Override
                 public void mouseReleased(MouseEvent e) {
                     maybeShowPopup(e);
@@ -134,7 +164,7 @@ public class SeleniumSuite extends JPanel {
                 
                 public void maybeShowPopup(MouseEvent event) {
                     if (event.isPopupTrigger()) {
-                        tabPopup.show(event.getComponent(), event.getX(), event.getY());;
+                        tabPopup.show(event.getComponent(), event.getX(), event.getY());
                     }
                 }
             });
@@ -159,8 +189,8 @@ public class SeleniumSuite extends JPanel {
                 
                 @Override
                 public void actionPerformed(ActionEvent event) {
-                    for(int i = resourceEditor.getTabCount() - 1; i >= 0; i--) {
-                        if(resourceEditor.getComponentAt(i) != closing) {
+                    for (int i = resourceEditor.getTabCount() - 1; i >= 0; i--) {
+                        if (resourceEditor.getComponentAt(i) != closing) {
                             resourceEditor.removeTabAt(i);
                         }
                     }
