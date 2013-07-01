@@ -29,4 +29,6 @@ public interface ResourceType {
     BufferedImage getPreview(Resource resource) throws IOException;
     
     ResourceEditor getEditor(Resource resource);
+    
+    boolean equals(Resource r1, Resource r2);
 }

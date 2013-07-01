@@ -41,7 +41,11 @@ public class Resource {
     public FileSystem getFile() {
         return tree.getRoot().getChild(path);
     }
-
+    
+    public Resource getChildResource(String name) {
+        return new Resource(tree, this.path + "/" + name);
+    }
+    
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -50,7 +54,7 @@ public class Resource {
         result = prime * result + ((tree == null) ? 0 : tree.hashCode());
         return result;
     }
-
+    
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

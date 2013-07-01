@@ -193,6 +193,16 @@ public class NioFileSystem implements FileSystem, Closeable {
         if (!(root instanceof NioFileSystem)) {
             throw new UnsupportedOperationException();
         }
-        return ((NioFileSystem)root).file.relativize(file).toString();
+        return ((NioFileSystem) root).file.relativize(file).toString();
+    }
+    
+    @Override
+    public void delete() throws IOException {
+        Files.deleteIfExists(file);
+    }
+    
+    @Override
+    public void flushManagingSystem() {
+        // TODO
     }
 }

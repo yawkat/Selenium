@@ -18,17 +18,25 @@
  ******************************************************************************/
 package at.yawk.selenium.ui;
 
+import static at.yawk.selenium.Strings.t;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -47,6 +55,7 @@ public class ResourceTreeViewer extends JPanel {
     private static final long serialVersionUID = 1L;
     private ResourceTree[] trees = new ResourceTree[0];
     private ResourceOpenListener openListener;
+    private JTree treeView;
     
     public ResourceTreeViewer(ResourceTree... trees) {
         this.setTrees(trees);
@@ -67,29 +76,48 @@ public class ResourceTreeViewer extends JPanel {
                 addRecursive(resourceTree, rootFile, rootNode);
                 root.add(rootNode);
             }
-            final JTree tree = new JTree(root);
-            add(new JScrollPane(tree), BorderLayout.CENTER);
+            treeView = new JTree(root);
+            add(new JScrollPane(treeView), BorderLayout.CENTER);
             
-            for (int row = 0; row < tree.getRowCount(); row++) {
-                tree.expandRow(row);
+            for (int row = 0; row < treeView.getRowCount(); row++) {
+                treeView.expandRow(row);
             }
             
-            tree.addMouseListener(new MouseAdapter() {
+            treeView.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent event) {
-                    if (event.getClickCount() > 1) {
-                        if (openListener != null) {
-                            int selRow = tree.getRowForLocation(event.getX(), event.getY());
-                            Resource r = rowToResource(tree, selRow);
-                            if (r != null) {
-                                openListener.onResourceOpened(r);
+                    TreePath selRow = treeView.getPathForLocation(event.getX(), event.getY());
+                    if (selRow == null) {
+                        return;
+                    }
+                    final Object uobj = ((DefaultMutableTreeNode) selRow.getLastPathComponent()).getUserObject();
+                    if (event.getClickCount() > 1 && event.getButton() == MouseEvent.BUTTON1 && openListener != null && uobj instanceof Resource) {
+                        openListener.onResourceOpened((Resource) uobj);
+                    } else if (event.getButton() == MouseEvent.BUTTON3 && uobj instanceof ResourceTree) {
+                        final JPopupMenu popup = new JPopupMenu();
+                        popup.add(new JMenuItem(new AbstractAction(t("Compress")) {
+                            private static final long serialVersionUID = 1L;
+                            
+                            @Override
+                            public void actionPerformed(ActionEvent arg0) {
+                                List<ResourceTree> other = new ArrayList<>(Arrays.asList(trees));
+                                other.remove(uobj);
+                                JDialog dialog = new JDialog();
+                                dialog.setModal(true);
+                                dialog.setResizable(false);
+                                dialog.add(new WizardCompress(dialog, (ResourceTree) uobj, other.toArray(new ResourceTree[other.size()])));
+                                dialog.pack();
+                                dialog.setLocationRelativeTo(ResourceTreeViewer.this.getParent());
+                                dialog.setVisible(true);
                             }
-                        }
+                        }));
+                        popup.show(treeView, event.getX(), event.getY());
                         event.consume();
                     }
+                    event.consume();
                 }
             });
-            tree.setCellRenderer(new DefaultTreeCellRenderer() {
+            treeView.setCellRenderer(new DefaultTreeCellRenderer() {
                 private static final long serialVersionUID = 1L;
                 
                 @Override
@@ -113,16 +141,17 @@ public class ResourceTreeViewer extends JPanel {
                             }
                         }
                     } else if (value instanceof ResourceTree) {
-                        setText(((ResourceTree) value).getRoot().getName());
-                        setIcon(new ImageIcon(((ResourceTree) value).getRoot().getFileTypePreview()));
+                        final ResourceTree root = (ResourceTree) value;
+                        setText(root.getRoot().getName());
+                        setIcon(new ImageIcon(root.getRoot().getFileTypePreview()));
                     } else {
                         setIcon(new ImageIcon(Icons.getIcon("page.png")));
                     }
                     return c;
                 }
             });
-            tree.setShowsRootHandles(true);
-            tree.setRootVisible(false);
+            treeView.setShowsRootHandles(true);
+            treeView.setRootVisible(false);
         }
         validate();
     }
@@ -169,14 +198,5 @@ public class ResourceTreeViewer extends JPanel {
     
     public static interface ResourceOpenListener {
         void onResourceOpened(Resource resource);
-    }
-    
-    private Resource rowToResource(JTree tree, int row) {
-        if (row < 0) {
-            return null;
-        }
-        TreePath selPath = tree.getPathForRow(row);
-        Object o = ((DefaultMutableTreeNode) selPath.getLastPathComponent()).getUserObject();
-        return o instanceof Resource && !((Resource) o).getFile().isDirectory() ? (Resource) o : null;
     }
 }

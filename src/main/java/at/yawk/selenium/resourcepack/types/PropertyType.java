@@ -29,6 +29,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -133,6 +134,19 @@ public class PropertyType implements ResourceType {
                 };
             }
         };
+    }
+    
+    @Override
+    public boolean equals(Resource r1, Resource r2) {
+        try {
+            Properties p1 = new Properties();
+            p1.load(r1.getFile().getInputStream());
+            Properties p2 = new Properties();
+            p2.load(r2.getFile().getInputStream());
+            return p1.equals(p2);
+        } catch (IOException e) {
+            return false;
+        }
     }
 }
 

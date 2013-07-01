@@ -80,7 +80,7 @@ public class ImageType implements ResourceType {
                         leftPane.setTopComponent(original);
                         leftPane.setBottomComponent(new JLabel("Test"));
                         leftPane.setPreferredSize(new Dimension(size.width, Integer.MAX_VALUE));
-
+                        
                         main.setLayout(new LayoutManager() {
                             @Override
                             public void removeLayoutComponent(Component c) {}
@@ -118,6 +118,15 @@ public class ImageType implements ResourceType {
                 };
             }
         };
+    }
+    
+    @Override
+    public boolean equals(Resource r1, Resource r2) {
+        try {
+            return getPreview(r1).equals(getPreview(r2));
+        } catch (IOException e) {
+            return false;
+        }
     }
 }
 

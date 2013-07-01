@@ -46,4 +46,8 @@ public interface FileSystem {
     BufferedImage getFileTypePreview();
     
     String getRelativePath(FileSystem root);
+
+    void delete() throws IOException;
+
+    void flushManagingSystem();
 }
