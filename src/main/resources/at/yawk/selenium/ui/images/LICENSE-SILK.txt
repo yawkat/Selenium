@@ -1,7 +1,7 @@
-The image files part of "SILK ICONS", namely "close.png", "lang.png", 
-"settings.png" and "sound.png" were created by Mark James 
-(http://www.famfamfam.com/lab/icons/silk/) and can be distributed under
-the following license:
+The image files part of "SILK ICONS", namely "close.png", "folder.png",
+"lang.png", "package.png", "page.png", "settings.png" and "sound.png" 
+were created by Mark James (http://www.famfamfam.com/lab/icons/silk/) 
+and can be distributed under the following license:
 
 
 Creative Commons Legal Code

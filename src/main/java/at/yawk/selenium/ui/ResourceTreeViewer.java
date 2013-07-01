@@ -32,7 +32,6 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import at.yawk.selenium.fs.FileSystem;
@@ -62,7 +61,7 @@ public class ResourceTreeViewer extends JPanel {
             DefaultMutableTreeNode root = new DefaultMutableTreeNode();
             for (ResourceTree resourceTree : getTrees()) {
                 FileSystem rootFile = resourceTree.getRoot();
-                final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(rootFile.getName());
+                final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(resourceTree);
                 addRecursive(resourceTree, rootFile, rootNode);
                 root.add(rootNode);
             }
@@ -88,23 +87,34 @@ public class ResourceTreeViewer extends JPanel {
                     }
                 }
             });
-            
             tree.setCellRenderer(new DefaultTreeCellRenderer() {
                 private static final long serialVersionUID = 1L;
                 
                 @Override
                 public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
                     Component c = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-                    if (leaf) {
-                        Resource r = rowToResource(tree, row);
-                        if (r != null) {
-                            ResourceType type = ResourceTypes.getResourceType(r);
+                    
+                    value = ((DefaultMutableTreeNode) value).getUserObject();
+                    
+                    if (value instanceof Resource) {
+                        setText(((Resource) value).getFile().getName());
+                        if (((Resource) value).getFile().isDirectory()) {
+                            setIcon(new ImageIcon(Icons.getIcon("folder.png")));
+                        } else {
+                            ResourceType type = ResourceTypes.getResourceType((Resource) value);
                             if (type != null) {
                                 try {
-                                    setIcon(new ImageIcon(PreviewCache.getPreview(r, type, 16, 16)));
+                                    setIcon(new ImageIcon(PreviewCache.getPreview((Resource) value, type, 16, 16)));
                                 } catch (IOException e) {}
+                            } else {
+                                setIcon(new ImageIcon(Icons.getIcon("page.png")));
                             }
                         }
+                    } else if (value instanceof ResourceTree) {
+                        setText(((ResourceTree) value).getRoot().getName());
+                        setIcon(new ImageIcon(((ResourceTree) value).getRoot().getFileTypePreview()));
+                    } else {
+                        setIcon(new ImageIcon(Icons.getIcon("page.png")));
                     }
                     return c;
                 }
@@ -117,7 +127,7 @@ public class ResourceTreeViewer extends JPanel {
     private static void addRecursive(ResourceTree tree, FileSystem s, MutableTreeNode node) {
         if (s.isDirectory()) {
             for (FileSystem child : s.listChildren()) {
-                DefaultMutableTreeNode n = new DefaultMutableTreeNode(child.getName());
+                DefaultMutableTreeNode n = new DefaultMutableTreeNode(tree.getResource(child.getRelativePath(tree.getRoot())));
                 addRecursive(tree, child, n);
                 node.insert(n, node.getChildCount());
             }
@@ -150,15 +160,7 @@ public class ResourceTreeViewer extends JPanel {
             return null;
         }
         TreePath selPath = tree.getPathForRow(row);
-        StringBuilder path = new StringBuilder();
-        Object[] oa = selPath.getPath();
-        for (int i = 2; i < oa.length; i++) {
-            path.append(((DefaultMutableTreeNode) oa[i]).getUserObject());
-            path.append('/');
-        }
-        String pathS = path.toString();
-        Resource resource = getTrees()[((DefaultMutableTreeNode) oa[0]).getIndex((TreeNode) oa[1])].getResource(pathS);
-        FileSystem fs = resource.getFile();
-        return fs.isDirectory() ? null : resource;
+        Object o = ((DefaultMutableTreeNode) selPath.getLastPathComponent()).getUserObject();
+        return o instanceof Resource && !((Resource) o).getFile().isDirectory() ? (Resource) o : null;
     }
 }

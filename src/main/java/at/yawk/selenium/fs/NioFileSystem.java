@@ -18,6 +18,7 @@
  ******************************************************************************/
 package at.yawk.selenium.fs;
 
+import java.awt.image.BufferedImage;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ServiceConfigurationError;
 import java.util.WeakHashMap;
+
+import at.yawk.selenium.ui.Icons;
 
 import com.google.common.collect.Sets;
 
@@ -142,11 +145,9 @@ public class NioFileSystem implements FileSystem, Closeable {
     @Override
     public File getBuffered() throws IOException {
         if (buffered == null) {
-            try {
-                File f = file.toFile();
-                f.toURI().toURL();
-                buffered = f;
-            } catch (UnsupportedOperationException | MalformedURLException e) {
+            if (isFile()) {
+                buffered = file.toFile();
+            } else {
                 buffered = File.createTempFile("tmp", getName());
                 Files.copy(file, buffered.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
@@ -171,5 +172,27 @@ public class NioFileSystem implements FileSystem, Closeable {
     @Override
     public void close() throws IOException {
         clearBuffer();
+    }
+    
+    @Override
+    public BufferedImage getFileTypePreview() {
+        return isDirectory() ? (isFile() ? Icons.getIcon("folder.png") : Icons.getIcon("package.png")) : Icons.getIcon("page.png");
+    }
+    
+    private boolean isFile() {
+        try {
+            file.toFile().toURI().toURL();
+            return true;
+        } catch (UnsupportedOperationException | MalformedURLException e) {
+            return false;
+        }
+    }
+    
+    @Override
+    public String getRelativePath(FileSystem root) {
+        if (!(root instanceof NioFileSystem)) {
+            throw new UnsupportedOperationException();
+        }
+        return ((NioFileSystem)root).file.relativize(file).toString();
     }
 }

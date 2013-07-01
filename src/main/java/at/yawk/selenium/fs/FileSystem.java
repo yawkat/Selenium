@@ -18,6 +18,7 @@
  ******************************************************************************/
 package at.yawk.selenium.fs;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,4 +42,8 @@ public interface FileSystem {
     File getBuffered() throws IOException;
 
     void clearBuffer();
+    
+    BufferedImage getFileTypePreview();
+    
+    String getRelativePath(FileSystem root);
 }
