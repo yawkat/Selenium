@@ -33,7 +33,6 @@ import at.yawk.selenium.resourcepack.types.IcnsType;
 import at.yawk.selenium.resourcepack.types.ImageType;
 import at.yawk.selenium.resourcepack.types.PropertyType;
 import at.yawk.selenium.resourcepack.types.Sound3dType;
-import at.yawk.selenium.ui.ResourcePackOpener;
 import at.yawk.selenium.ui.SeleniumSuite;
 import at.yawk.selenium.ui.Wizard;
 
@@ -55,18 +54,9 @@ public class Selenium {
             e.printStackTrace();
         }
         
-        File[] rootFiles;
-        if (args.length >= 1) {
-            rootFiles = new File[args.length];
-            for (int i = 0; i < rootFiles.length; i++) {
-                rootFiles[i] = new File(args[i]);
-            }
-        } else {
-            rootFiles = new File[] { ResourcePackOpener.selectResourcePack() };
-            if (rootFiles[0] == null) {
-                System.exit(-1);
-                return;
-            }
+        File[] rootFiles = new File[args.length];
+        for (int i = 0; i < rootFiles.length; i++) {
+            rootFiles[i] = new File(args[i]);
         }
         
         JFrame test = new JFrame(t("Selenium"));
