@@ -27,7 +27,6 @@ import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import at.yawk.selenium.fs.NioFileSystem;
 import at.yawk.selenium.fs.Zip;
 import at.yawk.selenium.resourcepack.ResourceTree;
 import at.yawk.selenium.resourcepack.types.IcnsType;
@@ -73,7 +72,7 @@ public class Selenium {
         JFrame test = new JFrame(t("Selenium"));
         ResourceTree[] trees = new ResourceTree[rootFiles.length];
         for (int i = 0; i < trees.length; i++) {
-            trees[i] = new ResourceTree(new NioFileSystem(Zip.toPath(rootFiles[i])));
+            trees[i] = new ResourceTree(Zip.toFileSystem(rootFiles[i]));
         }
         test.add(new SeleniumSuite(trees));
         test.pack();

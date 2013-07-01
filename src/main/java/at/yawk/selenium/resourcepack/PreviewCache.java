@@ -60,6 +60,10 @@ public class PreviewCache {
         }
     }
     
+    public static void clearCache() {
+        images.invalidateAll();
+    }
+    
     private static class ResourceImageKey {
         private final Resource resource;
         private final ResourceType type;

@@ -41,6 +41,7 @@ import com.google.common.collect.Sets;
 public class NioFileSystem implements FileSystem, Closeable {
     private static final Collection<Closeable> closables = Sets.newSetFromMap(new WeakHashMap<Closeable, Boolean>());
     
+    private final NioFileSystem parent;
     private final Path file;
     private File buffered;
     
@@ -59,6 +60,11 @@ public class NioFileSystem implements FileSystem, Closeable {
     }
     
     public NioFileSystem(Path path) {
+        this(null, path);
+    }
+    
+    public NioFileSystem(NioFileSystem parent, Path path) {
+        this.parent = parent;
         this.file = path;
         closables.add(this);
     }
@@ -203,6 +209,12 @@ public class NioFileSystem implements FileSystem, Closeable {
     
     @Override
     public void flushManagingSystem() {
-        // TODO
+        if (parent != null) {
+            parent.flushManagingSystem();
+        }
+    }
+    
+    public Path getPath() {
+        return file;
     }
 }

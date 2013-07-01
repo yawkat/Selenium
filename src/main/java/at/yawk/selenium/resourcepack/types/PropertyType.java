@@ -24,6 +24,7 @@ import java.awt.BorderLayout;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -138,11 +139,11 @@ public class PropertyType implements ResourceType {
     
     @Override
     public boolean equals(Resource r1, Resource r2) {
-        try {
+        try (InputStream i1 = r1.getFile().getInputStream(); InputStream i2 = r2.getFile().getInputStream()) {
             Properties p1 = new Properties();
-            p1.load(r1.getFile().getInputStream());
+            p1.load(i1);
             Properties p2 = new Properties();
-            p2.load(r2.getFile().getInputStream());
+            p2.load(i2);
             return p1.equals(p2);
         } catch (IOException e) {
             return false;
@@ -190,6 +191,7 @@ class ReadableProperties {
             
             lines.add(new Property(key, value));
         }
+        reader.close();
     }
     
     public void write(Writer writer) throws IOException {
@@ -198,6 +200,7 @@ class ReadableProperties {
             writer.write(line.toString());
             writer.write(ln);
         }
+        writer.close();
     }
     
     interface Line {

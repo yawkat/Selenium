@@ -28,6 +28,7 @@ import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
@@ -53,7 +54,9 @@ public class ImageType implements ResourceType {
     
     @Override
     public BufferedImage getPreview(Resource file) throws IOException {
-        return ImageIO.read(file.getFile().getInputStream());
+        try (InputStream i = file.getFile().getInputStream()) {
+            return ImageIO.read(i);
+        }
     }
     
     @Override

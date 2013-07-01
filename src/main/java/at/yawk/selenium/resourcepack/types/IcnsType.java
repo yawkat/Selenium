@@ -20,6 +20,7 @@ package at.yawk.selenium.resourcepack.types;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.sanselan.ImageReadException;
 import org.apache.sanselan.formats.icns.IcnsImageParser;
@@ -41,8 +42,8 @@ public class IcnsType extends ImageType {
     
     @Override
     public BufferedImage getPreview(Resource resource) throws IOException {
-        try {
-            return new IcnsImageParser().getBufferedImage(ByteStreams.toByteArray(resource.getFile().getInputStream()), null);
+        try (InputStream i = resource.getFile().getInputStream()) {
+            return new IcnsImageParser().getBufferedImage(ByteStreams.toByteArray(i), null);
         } catch (ImageReadException e) {
             throw new IOException(e);
         }

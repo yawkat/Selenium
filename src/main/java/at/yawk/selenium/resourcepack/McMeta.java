@@ -19,6 +19,7 @@
 package at.yawk.selenium.resourcepack;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.json.simple.JSONObject;
@@ -45,8 +46,8 @@ public class McMeta {
     private JSONObject getRoot() throws McMetaException {
         if (rootObject == null) {
             JSONParser parser = new JSONParser();
-            try {
-                rootObject = (JSONObject) parser.parse(new InputStreamReader(file.getInputStream()));
+            try (InputStream i = file.getInputStream()) {
+                rootObject = (JSONObject) parser.parse(new InputStreamReader(i));
             } catch (ParseException | IOException e) {
                 throw new McMetaException(e);
             }
@@ -55,7 +56,7 @@ public class McMeta {
     }
     
     private String getValue0(String key) throws McMetaException {
-        String[] components = key.split(".");
+        String[] components = key.split("\\.");
         JSONObject o = rootObject;
         for (int i = 0; i < components.length; i++) {
             if (i == components.length - 1) {

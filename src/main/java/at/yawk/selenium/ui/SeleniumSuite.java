@@ -45,7 +45,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.Border;
 
-import at.yawk.selenium.fs.NioFileSystem;
 import at.yawk.selenium.fs.Zip;
 import at.yawk.selenium.resourcepack.PreviewCache;
 import at.yawk.selenium.resourcepack.Resource;
@@ -87,7 +86,7 @@ public class SeleniumSuite extends JPanel {
                     File f = ResourcePackOpener.selectResourcePack();
                     if (f != null) {
                         ResourceTree[] trees = Arrays.copyOf(tree.getTrees(), tree.getTrees().length + 1);
-                        trees[trees.length - 1] = new ResourceTree(new NioFileSystem(Zip.toPath(f)));
+                        trees[trees.length - 1] = new ResourceTree(Zip.toFileSystem(f));
                         setResourceTrees(trees);
                     }
                 }

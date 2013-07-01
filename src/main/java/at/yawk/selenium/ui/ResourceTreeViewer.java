@@ -27,14 +27,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -109,6 +113,34 @@ public class ResourceTreeViewer extends JPanel {
                                 dialog.pack();
                                 dialog.setLocationRelativeTo(ResourceTreeViewer.this.getParent());
                                 dialog.setVisible(true);
+                            }
+                        }));
+                        popup.add(new JMenuItem(new AbstractAction(t("Rewrite images")) {
+                            private static final long serialVersionUID = 1L;
+                            
+                            @Override
+                            public void actionPerformed(ActionEvent arg0) {
+                                if (JOptionPane.showConfirmDialog(ResourceTreeViewer.this.getParent(), t("Are you sure you want to rewrite all images? This is unlikely but possible to result in data loss."), t("Rewrite images"), JOptionPane.OK_CANCEL_OPTION) == JOptionPane.YES_OPTION) {
+                                    runCompression(((ResourceTree) uobj).getRoot());
+                                    ((ResourceTree) uobj).getRoot().flushManagingSystem();
+                                    PreviewCache.clearCache();
+                                    ResourceTreeViewer.this.validate();
+                                }
+                            }
+                            
+                            private void runCompression(FileSystem system) {
+                                try {
+                                    String l = system.getName().toLowerCase();
+                                    if (l.endsWith(".png")) {
+                                        try (InputStream in = system.getInputStream(); OutputStream out = system.getOutputStream()) {
+                                            ImageIO.write(ImageIO.read(in), "PNG", out);
+                                        }
+                                    }
+                                } catch (Exception e) {}
+                                
+                                for (FileSystem child : system.listChildren()) {
+                                    runCompression(child);
+                                }
                             }
                         }));
                         popup.show(treeView, event.getX(), event.getY());
