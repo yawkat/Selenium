@@ -32,6 +32,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import at.yawk.selenium.fs.FileSystem;
@@ -43,29 +44,29 @@ import at.yawk.selenium.resourcepack.ResourceTypes;
 
 public class ResourceTreeViewer extends JPanel {
     private static final long serialVersionUID = 1L;
-    private ResourceTree tree = null;
+    private ResourceTree[] trees = new ResourceTree[0];
     private ResourceOpenListener openListener;
     
-    public ResourceTreeViewer(ResourceTree tree) {
-        this.setTree(tree);
+    public ResourceTreeViewer(ResourceTree... trees) {
+        this.setTrees(trees);
         init();
         setPreferredSize(new Dimension(350, -1));
-    }
-    
-    public ResourceTreeViewer() {
-        this(null);
     }
     
     private void init() {
         removeAll();
         setLayout(new BorderLayout());
-        if (getTree() == null) {
+        if (getTrees().length == 0) {
             // TODO message
         } else {
-            FileSystem rootFile = tree.getRoot();
-            final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(rootFile.getName());
-            addRecursive(tree, rootFile, rootNode);
-            final JTree tree = new JTree(rootNode);
+            DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+            for (ResourceTree resourceTree : getTrees()) {
+                FileSystem rootFile = resourceTree.getRoot();
+                final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(rootFile.getName());
+                addRecursive(resourceTree, rootFile, rootNode);
+                root.add(rootNode);
+            }
+            final JTree tree = new JTree(root);
             add(new JScrollPane(tree), BorderLayout.CENTER);
             
             for (int row = 0; row < tree.getRowCount(); row++) {
@@ -108,6 +109,8 @@ public class ResourceTreeViewer extends JPanel {
                     return c;
                 }
             });
+            tree.setShowsRootHandles(true);
+            tree.setRootVisible(false);
         }
     }
     
@@ -121,12 +124,12 @@ public class ResourceTreeViewer extends JPanel {
         }
     }
     
-    public ResourceTree getTree() {
-        return tree;
+    public ResourceTree[] getTrees() {
+        return trees;
     }
     
-    public void setTree(ResourceTree tree) {
-        this.tree = tree;
+    public void setTrees(ResourceTree... trees) {
+        this.trees = trees;
         init();
     }
     
@@ -149,12 +152,12 @@ public class ResourceTreeViewer extends JPanel {
         TreePath selPath = tree.getPathForRow(row);
         StringBuilder path = new StringBuilder();
         Object[] oa = selPath.getPath();
-        for (int i = 1; i < oa.length; i++) {
+        for (int i = 2; i < oa.length; i++) {
             path.append(((DefaultMutableTreeNode) oa[i]).getUserObject());
             path.append('/');
         }
         String pathS = path.toString();
-        Resource resource = ResourceTreeViewer.this.tree.getResource(pathS);
+        Resource resource = getTrees()[((DefaultMutableTreeNode) oa[0]).getIndex((TreeNode) oa[1])].getResource(pathS);
         FileSystem fs = resource.getFile();
         return fs.isDirectory() ? null : resource;
     }

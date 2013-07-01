@@ -55,8 +55,8 @@ public class SeleniumSuite extends JPanel {
     private JTabbedPane resourceEditor = new JTabbedPane();
     private JSplitPane center = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true);
     
-    public SeleniumSuite(ResourceTree tree) {
-        this.tree = new ResourceTreeViewer(tree);
+    public SeleniumSuite(ResourceTree... trees) {
+        this.tree = new ResourceTreeViewer(trees);
         setLayout(new BorderLayout());
         center.setLeftComponent(this.tree);
         center.setRightComponent(resourceEditor);
@@ -70,8 +70,8 @@ public class SeleniumSuite extends JPanel {
         });
     }
     
-    public void setResourceTree(ResourceTree tree) {
-        this.tree.setTree(tree);
+    public void setResourceTrees(ResourceTree... trees) {
+        this.tree.setTrees(trees);
     }
     
     private void addEditor(Resource resource) {

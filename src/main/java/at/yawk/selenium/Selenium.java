@@ -23,6 +23,7 @@ import static at.yawk.selenium.Strings.t;
 import java.io.File;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -35,6 +36,7 @@ import at.yawk.selenium.resourcepack.types.PropertyType;
 import at.yawk.selenium.resourcepack.types.Sound3dType;
 import at.yawk.selenium.ui.ResourcePackOpener;
 import at.yawk.selenium.ui.SeleniumSuite;
+import at.yawk.selenium.ui.Wizard;
 
 public class Selenium {
     public static void main(String[] args) {
@@ -54,22 +56,35 @@ public class Selenium {
             e.printStackTrace();
         }
         
-        File rootFile;
-        if (args.length == 1) {
-            rootFile = new File(args[0]);
+        File[] rootFiles;
+        if (args.length >= 1) {
+            rootFiles = new File[args.length];
+            for (int i = 0; i < rootFiles.length; i++) {
+                rootFiles[i] = new File(args[i]);
+            }
         } else {
-            rootFile = ResourcePackOpener.selectResourcePack();
-            if (rootFile == null) {
+            rootFiles = new File[] { ResourcePackOpener.selectResourcePack() };
+            if (rootFiles[0] == null) {
                 System.exit(-1);
                 return;
             }
         }
         
         JFrame test = new JFrame(t("Selenium"));
-        test.add(new SeleniumSuite(new ResourceTree(new NioFileSystem(Zip.toPath(rootFile)))));
+        ResourceTree[] trees = new ResourceTree[rootFiles.length];
+        for (int i = 0; i < trees.length; i++) {
+            trees[i] = new ResourceTree(new NioFileSystem(Zip.toPath(rootFiles[i])));
+        }
+        test.add(new SeleniumSuite(trees));
         test.pack();
         test.setExtendedState(test.getExtendedState() | JFrame.MAXIMIZED_BOTH);
         test.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         test.setVisible(true);
+        
+        JOptionPane wiz = new JOptionPane("Wizard");
+        wiz.add(new Wizard() {
+            private static final long serialVersionUID = 1L;
+        });
+        wiz.setVisible(true);
     }
 }
