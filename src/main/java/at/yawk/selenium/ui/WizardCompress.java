@@ -144,7 +144,7 @@ public class WizardCompress extends Wizard {
                 public void run() {
                     ResourceType type = ResourceTypes.getResourceType(r1);
                     if (type != null) {
-                        if (!type.equals(r1, r2)) {
+                        if (type.equals(r1, r2)) {
                             try {
                                 f1.delete();
                                 synchronized (progressLog) {
