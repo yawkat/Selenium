@@ -21,17 +21,17 @@ package at.yawk.selenium.ui;
 import static at.yawk.selenium.Strings.t;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -107,6 +107,74 @@ public class SeleniumSuite extends JPanel {
         }
         menu.add(file);
         add(menu, BorderLayout.PAGE_START);
+        
+        resourceEditor.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+            
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+            
+            public void maybeShowPopup(MouseEvent event) {
+                if (event.isPopupTrigger()) {
+                    for (int i = 0; i < resourceEditor.getTabCount(); i++) {
+                        final Component tab = resourceEditor.getTabComponentAt(i);
+                        if (tab.getBounds().contains(event.getX(), event.getY())) {
+                            final int tabIndex = i;
+                            Resource closingResource0 = null;
+                            for (Entry<Resource, Component> c : openTabs.entrySet()) {
+                                if (c.getValue() == resourceEditor.getComponentAt(i)) {
+                                    closingResource0 = c.getKey();
+                                    break;
+                                }
+                            }
+                            final Resource closingResource = closingResource0;
+                            
+                            final JPopupMenu tabPopup = new JPopupMenu();
+                            
+                            tabPopup.add(new JMenuItem(new AbstractAction(t("Close")) {
+                                private static final long serialVersionUID = 1L;
+                                
+                                @Override
+                                public void actionPerformed(ActionEvent event) {
+                                    resourceEditor.removeTabAt(tabIndex);
+                                    openTabs.remove(closingResource);
+                                }
+                            }));
+                            tabPopup.add(new JMenuItem(new AbstractAction(t("Close all")) {
+                                private static final long serialVersionUID = 1L;
+                                
+                                @Override
+                                public void actionPerformed(ActionEvent event) {
+                                    resourceEditor.removeAll();
+                                    openTabs.clear();
+                                }
+                            }));
+                            tabPopup.add(new JMenuItem(new AbstractAction(t("Close all but this")) {
+                                private static final long serialVersionUID = 1L;
+                                
+                                @Override
+                                public void actionPerformed(ActionEvent event) {
+                                    for (int i = resourceEditor.getTabCount() - 1; i >= 0; i--) {
+                                        Component c = resourceEditor.getTabComponentAt(i);
+                                        if (c != tab) {
+                                            resourceEditor.removeTabAt(i);
+                                        }
+                                    }
+                                    openTabs.keySet().retainAll(Collections.singleton(closingResource));
+                                }
+                            }));
+                            tabPopup.show(event.getComponent(), event.getX(), event.getY());
+                            break;
+                        }
+                    }
+                }
+            }
+        });
     }
     
     public void setResourceTrees(ResourceTree... trees) {
@@ -137,7 +205,7 @@ public class SeleniumSuite extends JPanel {
             final JComponent closing = component;
             // close button
             final JComponent derived = new JPanel();
-            derived.setBackground(new Color(0, 0, 0, 0));
+            derived.setOpaque(false);
             derived.setLayout(new BorderLayout());
             
             JLabel l1 = new JLabel(icon);
@@ -161,65 +229,6 @@ public class SeleniumSuite extends JPanel {
             derived.add(l1, BorderLayout.LINE_START);
             derived.add(l2, BorderLayout.CENTER);
             derived.add(l3, BorderLayout.LINE_END);
-            
-            final JPopupMenu tabPopup = new JPopupMenu();
-            derived.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    maybeShowPopup(e);
-                }
-                
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    maybeShowPopup(e);
-                }
-                
-                public void maybeShowPopup(MouseEvent event) {
-                    if (event.isPopupTrigger()) {
-                        tabPopup.show(event.getComponent(), event.getX(), event.getY());
-                    }
-                }
-            });
-            tabPopup.add(new JMenuItem(new AbstractAction(t("Close")) {
-                private static final long serialVersionUID = 1L;
-                
-                @Override
-                public void actionPerformed(ActionEvent event) {
-                    resourceEditor.remove(closing);
-                    for (Iterator<Component> i = openTabs.values().iterator(); i.hasNext();) {
-                        if (i.next() == closing) {
-                            i.remove();
-                        }
-                    }
-                }
-            }));
-            tabPopup.add(new JMenuItem(new AbstractAction(t("Close all")) {
-                private static final long serialVersionUID = 1L;
-                
-                @Override
-                public void actionPerformed(ActionEvent event) {
-                    resourceEditor.removeAll();
-                    openTabs.clear();
-                }
-            }));
-            tabPopup.add(new JMenuItem(new AbstractAction(t("Close all but this")) {
-                private static final long serialVersionUID = 1L;
-                
-                @Override
-                public void actionPerformed(ActionEvent event) {
-                    for (int i = resourceEditor.getTabCount() - 1; i >= 0; i--) {
-                        Component c = resourceEditor.getComponentAt(i);
-                        if (c != closing) {
-                            resourceEditor.removeTabAt(i);
-                        }
-                    }
-                    for (Iterator<Resource> i = openTabs.keySet().iterator(); i.hasNext();) {
-                        if (!i.next().equals(resource)) {
-                            i.remove();
-                        }
-                    }
-                }
-            }));
             
             resourceEditor.setTabComponentAt(index, derived);
         }
