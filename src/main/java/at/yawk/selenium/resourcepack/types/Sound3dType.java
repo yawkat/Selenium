@@ -147,6 +147,8 @@ public class Sound3dType implements ResourceType {
                         buttons(false);
                         
                         loadLwjgl = new JButton(new AbstractAction(t("Load LWJGL library natives for better sound")) {
+                            private static final long serialVersionUID = 1L;
+
                             @Override
                             public void actionPerformed(ActionEvent arg0) {
                                 SoundManager.loadLwjgl();

@@ -153,7 +153,7 @@ public class SoundManager implements Closeable {
         if (playing) {
             throw new IllegalStateException();
         }
-        soundSystem.newSource(false, soundId, url, "file.ogg", false, x, y, z, SoundSystemConfig.ATTENUATION_LINEAR, 64);
+        soundSystem.newSource(false, soundId, url, soundId + ".ogg", false, x, y, z, SoundSystemConfig.ATTENUATION_LINEAR, 64);
         return this;
     }
     
