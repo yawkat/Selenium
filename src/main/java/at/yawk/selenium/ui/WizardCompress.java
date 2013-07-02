@@ -150,8 +150,23 @@ public class WizardCompress extends Wizard {
             }
         }
         
-        for (FileSystem f : r1.getFile().listChildren()) {
+        for (FileSystem f : f1.listChildren()) {
             work(r1.getChildResource(f.getName()), r2.getChildResource(f.getName()));
+        }
+        
+        if (f1.isDirectory()) {
+            worker.execute(new Runnable() {
+                @Override
+                public void run() {
+                    if (f1.listChildren().length == 0) {
+                        try {
+                            f1.delete();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
         }
     }
 }
