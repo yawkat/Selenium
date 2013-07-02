@@ -20,6 +20,7 @@ package at.yawk.selenium;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.io.File;
 
 public class Util {
     private Util() {}
@@ -37,5 +38,20 @@ public class Util {
     
     public static BufferedImage resizeImageIfBigger(BufferedImage image, int width, int height) {
         return resizeImage(image, Math.min(width, image.getWidth()), Math.min(height, image.getHeight()));
+    }
+    
+    public static File getMinecraftDirectory() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        String userHome = System.getProperty("user.home", ".");
+        if (osName.contains("win")) {
+            String appdata = System.getenv("APPDATA");
+            return new File(appdata != null ? appdata : userHome, ".minecraft/");
+        } else if (osName.contains("mac")) {
+            return new File(userHome, "Library/Application Support/minecraft");
+        } else if (osName.contains("linux") || osName.contains("unix")) {
+            return new File(userHome, ".minecraft/");
+        } else {
+            return new File(userHome, "minecraft/");
+        }
     }
 }

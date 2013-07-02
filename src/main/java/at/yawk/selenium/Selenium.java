@@ -40,6 +40,12 @@ import at.yawk.selenium.ui.Wizard;
 
 public class Selenium {
     public static Window mainWindow;
+    public static File currentFileChooserDirectory;
+    
+    static {
+        File f = Util.getMinecraftDirectory();
+        currentFileChooserDirectory = f.exists() && f.isDirectory() ? f : new File(".");
+    }
     
     public static void main(String[] args) {
         try {

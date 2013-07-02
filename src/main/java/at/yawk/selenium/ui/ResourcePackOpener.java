@@ -22,6 +22,8 @@ import java.io.File;
 
 import javax.swing.JFileChooser;
 
+import at.yawk.selenium.Selenium;
+
 public class ResourcePackOpener extends JFileChooser {
     private static final long serialVersionUID = 1L;
     
@@ -31,11 +33,13 @@ public class ResourcePackOpener extends JFileChooser {
     }
     
     public ResourcePackOpener() {
-        this(null);
+        this(Selenium.currentFileChooserDirectory);
     }
     
     public File selectResourcePack0() {
-        return showOpenDialog(null) == JFileChooser.APPROVE_OPTION ? getSelectedFile() : null;
+        File f = showOpenDialog(null) == JFileChooser.APPROVE_OPTION ? getSelectedFile() : null;
+        Selenium.currentFileChooserDirectory = getCurrentDirectory();
+        return f;
     }
     
     public static File selectResourcePack(File initDirectory) {
@@ -43,6 +47,6 @@ public class ResourcePackOpener extends JFileChooser {
     }
     
     public static File selectResourcePack() {
-        return selectResourcePack(null);
+        return new ResourcePackOpener().selectResourcePack0();
     }
 }
