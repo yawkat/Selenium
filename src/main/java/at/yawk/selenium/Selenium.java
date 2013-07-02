@@ -25,7 +25,6 @@ import java.awt.Window;
 import java.io.File;
 
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -36,7 +35,6 @@ import at.yawk.selenium.resourcepack.types.ImageType;
 import at.yawk.selenium.resourcepack.types.PropertyType;
 import at.yawk.selenium.resourcepack.types.Sound3dType;
 import at.yawk.selenium.ui.SeleniumSuite;
-import at.yawk.selenium.ui.Wizard;
 
 public class Selenium {
     public static Window mainWindow;

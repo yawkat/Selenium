@@ -20,6 +20,7 @@ package at.yawk.selenium.ui;
 
 import static at.yawk.selenium.Strings.t;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.IOException;
@@ -35,6 +36,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import at.yawk.selenium.fs.FileSystem;
@@ -47,15 +49,16 @@ public class WizardCompress extends Wizard {
     private static final long serialVersionUID = 1L;
     
     private final ResourceTree thisPack;
+    private final JPanel panel = new JPanel();
     private JComboBox<ResourceTree> defaultPacks;
     private JProgressBar progress;
+    private JTextArea progressLog;
     private ExecutorService worker = Executors.newFixedThreadPool(4);
     
     public WizardCompress(ResourceTree thisPack, ResourceTree[] otherPacks) {
         this.thisPack = thisPack;
         setMode(OPTION_NEXT | OPTION_ABORT);
         
-        JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         
         JTextArea label = new JTextArea(t("This wizard will remove all files that are not changed compared to the default resource pack from this pack. Be careful, you cannot undo this operation."));
@@ -98,7 +101,15 @@ public class WizardCompress extends Wizard {
         if (JOptionPane.showConfirmDialog(this, t("Are you sure you want to remove all duplicates? You cannot undo this operation!"), t("Compress"), JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
             setMode(0);
             progress = new JProgressBar(0, 1);
-            add(progress);
+            progressLog = new JTextArea();
+            progressLog.setCursor(null);
+            progressLog.setFocusable(false);
+            progressLog.setEditable(false);
+            panel.removeAll();
+            panel.setLayout(new BorderLayout());
+            panel.add(progress, BorderLayout.PAGE_START);
+            panel.add(new JScrollPane(progressLog), BorderLayout.CENTER);
+            panel.validate();
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -111,6 +122,9 @@ public class WizardCompress extends Wizard {
                         worker.awaitTermination(1, TimeUnit.DAYS);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
+                    }
+                    synchronized (progressLog) {
+                        progressLog.setText(progressLog.getText() + t("Done!") + "\n");
                     }
                     thisPack.getRoot().flushManagingSystem();
                     thisPack.callUpdateListeners();
@@ -133,8 +147,14 @@ public class WizardCompress extends Wizard {
                         if (!type.equals(r1, r2)) {
                             try {
                                 f1.delete();
+                                synchronized (progressLog) {
+                                    progressLog.setText(progressLog.getText() + String.format(t("Deleted %s"), f1.getName()) + "\n");
+                                }
                             } catch (IOException e) {
                                 e.printStackTrace();
+                                synchronized (progressLog) {
+                                    progressLog.setText(progressLog.getText() + String.format(t("Could not delete %s"), f1.getName()) + "\n");
+                                }
                             }
                         }
                     }

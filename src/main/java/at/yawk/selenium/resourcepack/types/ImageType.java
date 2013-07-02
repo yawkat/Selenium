@@ -55,7 +55,7 @@ public class ImageType implements ResourceType {
     
     @Override
     public BufferedImage getPreview(Resource file) throws IOException {
-        try (InputStream i = file.getFile().getInputStream()) {
+        try (InputStream i = file.getFile().getInput()) {
             return ImageIO.read(i);
         }
     }

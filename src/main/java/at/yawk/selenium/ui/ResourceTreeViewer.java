@@ -139,7 +139,7 @@ public class ResourceTreeViewer extends JPanel {
                                 try {
                                     String l = system.getName().toLowerCase();
                                     if (l.endsWith(".png")) {
-                                        try (InputStream in = system.getInputStream(); OutputStream out = system.getOutputStream()) {
+                                        try (InputStream in = system.getInput(); OutputStream out = system.getOutput()) {
                                             ImageIO.write(ImageIO.read(in), "PNG", out);
                                         }
                                     }

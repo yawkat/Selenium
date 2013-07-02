@@ -102,13 +102,13 @@ public abstract class Wizard extends JPanel {
     
     public void showWizard() {
         JDialog dialog = new JDialog();
+        dispose = dialog;
         dialog.setModal(true);
         dialog.setResizable(false);
         dialog.add(this);
         dialog.pack();
         dialog.setLocationRelativeTo(Selenium.mainWindow);
         dialog.setVisible(true);
-        dispose = dialog;
     }
     
     public void dispose() {

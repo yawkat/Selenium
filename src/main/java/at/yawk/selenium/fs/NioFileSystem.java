@@ -37,6 +37,7 @@ import java.util.WeakHashMap;
 import at.yawk.selenium.ui.Icons;
 
 import com.google.common.collect.Sets;
+import com.google.common.io.ByteStreams;
 
 public class NioFileSystem implements FileSystem, Closeable {
     private static final Collection<Closeable> closables = Sets.newSetFromMap(new WeakHashMap<Closeable, Boolean>());
@@ -104,12 +105,12 @@ public class NioFileSystem implements FileSystem, Closeable {
     }
     
     @Override
-    public InputStream getInputStream() throws IOException {
+    public InputStream getInput() throws IOException {
         return Files.newInputStream(file);
     }
     
     @Override
-    public OutputStream getOutputStream() throws IOException {
+    public OutputStream getOutput() throws IOException {
         return Files.newOutputStream(file);
     }
     
@@ -216,5 +217,10 @@ public class NioFileSystem implements FileSystem, Closeable {
     
     public Path getPath() {
         return file;
+    }
+    
+    @Override
+    public boolean contentEquals(FileSystem other) throws IOException {
+        return ByteStreams.equal(this, other);
     }
 }

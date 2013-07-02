@@ -42,7 +42,7 @@ public class IcnsType extends ImageType {
     
     @Override
     public BufferedImage getPreview(Resource resource) throws IOException {
-        try (InputStream i = resource.getFile().getInputStream()) {
+        try (InputStream i = resource.getFile().getInput()) {
             return new IcnsImageParser().getBufferedImage(ByteStreams.toByteArray(i), null);
         } catch (ImageReadException e) {
             throw new IOException(e);

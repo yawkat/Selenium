@@ -24,7 +24,6 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Hashtable;
 
 import javax.swing.AbstractAction;
@@ -38,9 +37,6 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import com.google.common.io.ByteStreams;
-import com.google.common.io.InputSupplier;
 
 import at.yawk.selenium.fs.FileSystem;
 import at.yawk.selenium.resourcepack.Resource;
@@ -198,17 +194,7 @@ public class Sound3dType implements ResourceType {
     @Override
     public boolean equals(final Resource r1, final Resource r2) {
         try {
-            return ByteStreams.equal(new InputSupplier<InputStream>() {
-                @Override
-                public InputStream getInput() throws IOException {
-                    return r1.getFile().getInputStream();
-                }
-            }, new InputSupplier<InputStream>() {
-                @Override
-                public InputStream getInput() throws IOException {
-                    return r2.getFile().getInputStream();
-                }
-            });
+            return r1.getFile().contentEquals(r2.getFile());
         } catch (IOException e) {
             return false;
         }

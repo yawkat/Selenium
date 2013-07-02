@@ -24,7 +24,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public interface FileSystem {
+import com.google.common.io.InputSupplier;
+import com.google.common.io.OutputSupplier;
+
+public interface FileSystem extends InputSupplier<InputStream>, OutputSupplier<OutputStream> {
     boolean isDirectory();
     
     boolean exists();
@@ -35,19 +38,17 @@ public interface FileSystem {
     
     FileSystem getChild(String name);
     
-    InputStream getInputStream() throws IOException;
-    
-    OutputStream getOutputStream() throws IOException;
-    
     File getBuffered() throws IOException;
-
+    
     void clearBuffer();
     
     BufferedImage getFileTypePreview();
     
     String getRelativePath(FileSystem root);
-
+    
     void delete() throws IOException;
-
+    
     void flushManagingSystem();
+    
+    boolean contentEquals(FileSystem other) throws IOException;
 }

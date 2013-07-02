@@ -80,7 +80,7 @@ public class PropertyType implements ResourceType {
                     private JLabel status;
                     
                     {
-                        properties = new ReadableProperties(new BufferedReader(new InputStreamReader(resource.getFile().getInputStream(), "UTF-8")));
+                        properties = new ReadableProperties(new BufferedReader(new InputStreamReader(resource.getFile().getInput(), "UTF-8")));
                         table = new JTable();
                         
                         List<Object[]> data = new ArrayList<>();
@@ -114,7 +114,7 @@ public class PropertyType implements ResourceType {
                                     values.get(i).value = (String) table.getValueAt(i, 1);
                                 }
                                 try {
-                                    properties.write(new OutputStreamWriter(resource.getFile().getOutputStream()));
+                                    properties.write(new OutputStreamWriter(resource.getFile().getOutput()));
                                     status.setText(t("Saved"));
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -139,7 +139,7 @@ public class PropertyType implements ResourceType {
     
     @Override
     public boolean equals(Resource r1, Resource r2) {
-        try (InputStream i1 = r1.getFile().getInputStream(); InputStream i2 = r2.getFile().getInputStream()) {
+        try (InputStream i1 = r1.getFile().getInput(); InputStream i2 = r2.getFile().getInput()) {
             Properties p1 = new Properties();
             p1.load(i1);
             Properties p2 = new Properties();
