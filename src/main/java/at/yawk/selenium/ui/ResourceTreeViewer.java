@@ -36,7 +36,6 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
-import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -106,13 +105,7 @@ public class ResourceTreeViewer extends JPanel {
                             public void actionPerformed(ActionEvent arg0) {
                                 List<ResourceTree> other = new ArrayList<>(Arrays.asList(trees));
                                 other.remove(uobj);
-                                JDialog dialog = new JDialog();
-                                dialog.setModal(true);
-                                dialog.setResizable(false);
-                                dialog.add(new WizardCompress(dialog, (ResourceTree) uobj, other.toArray(new ResourceTree[other.size()])));
-                                dialog.pack();
-                                dialog.setLocationRelativeTo(ResourceTreeViewer.this.getParent());
-                                dialog.setVisible(true);
+                                new WizardCompress((ResourceTree) uobj, other.toArray(new ResourceTree[other.size()])).showWizard();
                             }
                         }));
                         popup.add(new JMenuItem(new AbstractAction(t("Rewrite images")) {

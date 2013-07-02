@@ -22,7 +22,6 @@ import static at.yawk.selenium.Strings.t;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Window;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,14 +46,12 @@ import at.yawk.selenium.resourcepack.ResourceTypes;
 public class WizardCompress extends Wizard {
     private static final long serialVersionUID = 1L;
     
-    private final Window dispose;
     private final ResourceTree thisPack;
     private JComboBox<ResourceTree> defaultPacks;
     private JProgressBar progress;
     private ExecutorService worker = Executors.newFixedThreadPool(4);
     
-    public WizardCompress(Window dispose, ResourceTree thisPack, ResourceTree[] otherPacks) {
-        this.dispose = dispose;
+    public WizardCompress(ResourceTree thisPack, ResourceTree[] otherPacks) {
         this.thisPack = thisPack;
         setMode(OPTION_NEXT | OPTION_ABORT);
         
@@ -90,7 +87,7 @@ public class WizardCompress extends Wizard {
     }
     
     protected void abort() {
-        dispose.dispose();
+        dispose();
     }
     
     protected void done() {
@@ -98,7 +95,7 @@ public class WizardCompress extends Wizard {
     }
     
     protected void next() {
-        if (JOptionPane.showConfirmDialog(dispose, t("Are you sure you want to remove all duplicates? You cannot undo this operation!"), t("Compress"), JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+        if (JOptionPane.showConfirmDialog(this, t("Are you sure you want to remove all duplicates? You cannot undo this operation!"), t("Compress"), JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
             setMode(0);
             progress = new JProgressBar(0, 1);
             add(progress);

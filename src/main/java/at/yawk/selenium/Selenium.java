@@ -20,6 +20,8 @@ package at.yawk.selenium;
 
 import static at.yawk.selenium.Strings.t;
 
+import java.awt.Frame;
+import java.awt.Window;
 import java.io.File;
 
 import javax.swing.JFrame;
@@ -37,6 +39,8 @@ import at.yawk.selenium.ui.SeleniumSuite;
 import at.yawk.selenium.ui.Wizard;
 
 public class Selenium {
+    public static Window mainWindow;
+    
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -59,16 +63,16 @@ public class Selenium {
             rootFiles[i] = new File(args[i]);
         }
         
-        JFrame test = new JFrame(t("Selenium"));
+        mainWindow = new JFrame(t("Selenium"));
         ResourceTree[] trees = new ResourceTree[rootFiles.length];
         for (int i = 0; i < trees.length; i++) {
             trees[i] = new ResourceTree(Zip.toFileSystem(rootFiles[i]));
         }
-        test.add(new SeleniumSuite(trees));
-        test.pack();
-        test.setExtendedState(test.getExtendedState() | JFrame.MAXIMIZED_BOTH);
-        test.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        test.setVisible(true);
+        mainWindow.add(new SeleniumSuite(trees));
+        mainWindow.pack();
+        ((Frame) mainWindow).setExtendedState(((Frame) mainWindow).getExtendedState() | JFrame.MAXIMIZED_BOTH);
+        ((JFrame) mainWindow).setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainWindow.setVisible(true);
         
         JOptionPane wiz = new JOptionPane("Wizard");
         wiz.add(new Wizard() {

@@ -22,12 +22,16 @@ import static at.yawk.selenium.Strings.t;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
+
+import at.yawk.selenium.Selenium;
 
 public abstract class Wizard extends JPanel {
     private static final long serialVersionUID = 1L;
@@ -36,6 +40,7 @@ public abstract class Wizard extends JPanel {
     public static int OPTION_ABORT = 2;
     public static int OPTION_NEXT = 4;
     
+    private Window dispose;
     private JButton next;
     private JButton abort;
     private JButton done;
@@ -93,5 +98,22 @@ public abstract class Wizard extends JPanel {
         done.setEnabled((mask & OPTION_DONE) != 0);
         abort.setEnabled((mask & OPTION_ABORT) != 0);
         next.setEnabled((mask & OPTION_NEXT) != 0);
+    }
+    
+    public void showWizard() {
+        JDialog dialog = new JDialog();
+        dialog.setModal(true);
+        dialog.setResizable(false);
+        dialog.add(this);
+        dialog.pack();
+        dialog.setLocationRelativeTo(Selenium.mainWindow);
+        dialog.setVisible(true);
+        dispose = dialog;
+    }
+    
+    public void dispose() {
+        if (dispose != null) {
+            dispose.dispose();
+        }
     }
 }
