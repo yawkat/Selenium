@@ -79,11 +79,5 @@ public class Selenium {
         ((Frame) mainWindow).setExtendedState(((Frame) mainWindow).getExtendedState() | JFrame.MAXIMIZED_BOTH);
         ((JFrame) mainWindow).setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainWindow.setVisible(true);
-        
-        JOptionPane wiz = new JOptionPane("Wizard");
-        wiz.add(new Wizard() {
-            private static final long serialVersionUID = 1L;
-        });
-        wiz.setVisible(true);
     }
 }
