@@ -18,10 +18,14 @@
  ******************************************************************************/
 package at.yawk.selenium.resourcepack;
 
+import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 import at.yawk.selenium.fs.FileSystem;
 
 public class ResourceTree {
     private final FileSystem root;
+    private Collection<ResourceTreeUpdateListener> updateListeners = new CopyOnWriteArraySet<>();
     
     public ResourceTree(FileSystem root) {
         this.root = root;
@@ -34,7 +38,21 @@ public class ResourceTree {
     public Resource getResource(String path) {
         return new Resource(this, path);
     }
-
+    
+    public void addResourceTreeUpdateListener(ResourceTreeUpdateListener listener) {
+        updateListeners.add(listener);
+    }
+    
+    public boolean removeResourceTreeUpdateListener(ResourceTreeUpdateListener listener) {
+        return updateListeners.remove(listener);
+    }
+    
+    public void callUpdateListeners() {
+        for (ResourceTreeUpdateListener listener : updateListeners) {
+            listener.onTreeUpdate(this);
+        }
+    }
+    
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -42,7 +60,7 @@ public class ResourceTree {
         result = prime * result + ((root == null) ? 0 : root.hashCode());
         return result;
     }
-
+    
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -63,5 +81,9 @@ public class ResourceTree {
             return false;
         }
         return true;
+    }
+    
+    public static interface ResourceTreeUpdateListener {
+        void onTreeUpdate(ResourceTree tree);
     }
 }

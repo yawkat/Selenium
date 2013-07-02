@@ -31,7 +31,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -51,6 +55,7 @@ import at.yawk.selenium.fs.FileSystem;
 import at.yawk.selenium.resourcepack.PreviewCache;
 import at.yawk.selenium.resourcepack.Resource;
 import at.yawk.selenium.resourcepack.ResourceTree;
+import at.yawk.selenium.resourcepack.ResourceTree.ResourceTreeUpdateListener;
 import at.yawk.selenium.resourcepack.ResourceType;
 import at.yawk.selenium.resourcepack.ResourceTypes;
 
@@ -59,6 +64,7 @@ public class ResourceTreeViewer extends JPanel {
     private ResourceTree[] trees = new ResourceTree[0];
     private ResourceOpenListener openListener;
     private JTree treeView;
+    private Collection<ResourceTreeUpdateListener> registeredUpdateListeners = new HashSet<>();
     
     public ResourceTreeViewer(ResourceTree... trees) {
         this.setTrees(trees);
@@ -74,10 +80,18 @@ public class ResourceTreeViewer extends JPanel {
         } else {
             DefaultMutableTreeNode root = new DefaultMutableTreeNode();
             for (ResourceTree resourceTree : getTrees()) {
-                FileSystem rootFile = resourceTree.getRoot();
+                final FileSystem rootFile = resourceTree.getRoot();
                 final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(resourceTree);
                 addRecursive(resourceTree, rootFile, rootNode);
                 root.add(rootNode);
+                ResourceTreeUpdateListener l = new ResourceTreeUpdateListener() {
+                    @Override
+                    public void onTreeUpdate(ResourceTree tree) {
+                        checkRecursive(tree, rootFile, rootNode);
+                    }
+                };
+                resourceTree.addResourceTreeUpdateListener(l);
+                registeredUpdateListeners.add(l);
             }
             treeView = new JTree(root);
             add(new JScrollPane(treeView), BorderLayout.CENTER);
@@ -191,6 +205,33 @@ public class ResourceTreeViewer extends JPanel {
         }
     }
     
+    private static void checkRecursive(ResourceTree tree, FileSystem s, MutableTreeNode node) {
+        if (!s.exists()) {
+            node.removeFromParent();
+        } else {
+            Set<FileSystem> containing = new HashSet<>();
+            
+            DefaultMutableTreeNode[] children = new DefaultMutableTreeNode[node.getChildCount()];
+            for (int i = 0; i < children.length; i++) {
+                children[i] = (DefaultMutableTreeNode) node.getChildAt(i);
+            }
+            
+            for (DefaultMutableTreeNode child : children) {
+                FileSystem f = ((Resource) child.getUserObject()).getFile();
+                checkRecursive(tree, f, child);
+                containing.add(f);
+            }
+            
+            for (FileSystem child : s.listChildren()) {
+                if (!containing.contains(child)) {
+                    DefaultMutableTreeNode n = new DefaultMutableTreeNode(tree.getResource(child.getRelativePath(tree.getRoot())));
+                    addRecursive(tree, child, n);
+                    node.insert(n, node.getChildCount());
+                }
+            }
+        }
+    }
+    
     public ResourceTree[] getTrees() {
         return trees;
     }
@@ -207,6 +248,14 @@ public class ResourceTreeViewer extends JPanel {
         
         if (Arrays.equals(this.trees, trees)) {
             return;
+        }
+        
+        for (ResourceTree resourceTree : this.trees) {
+            for (Iterator<ResourceTreeUpdateListener> i = registeredUpdateListeners.iterator(); i.hasNext();) {
+                if (resourceTree.removeResourceTreeUpdateListener(i.next())) {
+                    i.remove();
+                }
+            }
         }
         
         this.trees = trees;

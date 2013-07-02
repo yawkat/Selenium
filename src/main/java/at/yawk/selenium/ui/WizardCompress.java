@@ -113,6 +113,7 @@ public class WizardCompress extends Wizard {
                         Thread.currentThread().interrupt();
                     }
                     thisPack.getRoot().flushManagingSystem();
+                    thisPack.callUpdateListeners();
                     setMode(OPTION_DONE);
                 }
             }).start();
