@@ -71,7 +71,9 @@ public class SeleniumSuite extends JPanel {
         this.tree.setOpenListener(new ResourceOpenListener() {
             @Override
             public void onResourceOpened(Resource resource) {
-                addEditor(resource);
+                if (!resource.getFile().isDirectory()) {
+                    addEditor(resource);
+                }
             }
         });
         
