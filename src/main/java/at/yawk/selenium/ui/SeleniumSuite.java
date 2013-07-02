@@ -22,12 +22,16 @@ import static at.yawk.selenium.Strings.t;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -61,6 +65,8 @@ public class SeleniumSuite extends JPanel {
     private JMenuBar menu;
     private JSplitPane center = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true);
     
+    private Map<Resource, Component> openTabs = new HashMap<>();
+    
     public SeleniumSuite(ResourceTree... trees) {
         this.tree = new ResourceTreeViewer(trees);
         setLayout(new BorderLayout());
@@ -72,7 +78,11 @@ public class SeleniumSuite extends JPanel {
             @Override
             public void onResourceOpened(Resource resource) {
                 if (!resource.getFile().isDirectory()) {
-                    addEditor(resource);
+                    if (openTabs.containsKey(resource)) {
+                        resourceEditor.setSelectedComponent(openTabs.get(resource));
+                    } else {
+                        addEditor(resource);
+                    }
                 }
             }
         });
@@ -103,7 +113,7 @@ public class SeleniumSuite extends JPanel {
         this.tree.setTrees(trees);
     }
     
-    private void addEditor(Resource resource) {
+    private void addEditor(final Resource resource) {
         ResourceType type = ResourceTypes.getResourceType(resource);
         JComponent component;
         Icon icon = null;
@@ -122,6 +132,7 @@ public class SeleniumSuite extends JPanel {
         }
         final int index = resourceEditor.getTabCount();
         resourceEditor.insertTab("", null, component, resource.getPath(), index);
+        openTabs.put(resource, component);
         {
             final JComponent closing = component;
             // close button
@@ -175,6 +186,11 @@ public class SeleniumSuite extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent event) {
                     resourceEditor.remove(closing);
+                    for (Iterator<Component> i = openTabs.values().iterator(); i.hasNext();) {
+                        if (i.next() == closing) {
+                            i.remove();
+                        }
+                    }
                 }
             }));
             tabPopup.add(new JMenuItem(new AbstractAction(t("Close all")) {
@@ -183,6 +199,7 @@ public class SeleniumSuite extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent event) {
                     resourceEditor.removeAll();
+                    openTabs.clear();
                 }
             }));
             tabPopup.add(new JMenuItem(new AbstractAction(t("Close all but this")) {
@@ -191,8 +208,14 @@ public class SeleniumSuite extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent event) {
                     for (int i = resourceEditor.getTabCount() - 1; i >= 0; i--) {
-                        if (resourceEditor.getComponentAt(i) != closing) {
+                        Component c = resourceEditor.getComponentAt(i);
+                        if (c != closing) {
                             resourceEditor.removeTabAt(i);
+                        }
+                    }
+                    for (Iterator<Resource> i = openTabs.keySet().iterator(); i.hasNext();) {
+                        if (!i.next().equals(resource)) {
+                            i.remove();
                         }
                     }
                 }
