@@ -77,5 +77,16 @@
     	<artifactId>truezip-driver-file</artifactId>
     	<version>7.7.2</version>
     </dependency>
+    <dependency>
+    	<groupId>org.lwjgl.lwjgl</groupId>
+    	<artifactId>lwjgl</artifactId>
+    	<version>2.9.0</version>
+    </dependency>
+    <dependency>
+    	<groupId>org.lwjgl.lwjgl</groupId>
+    	<artifactId>lwjgl-platform</artifactId>
+    	<version>2.9.0</version>
+    	<type>pom</type>
+    </dependency>
   </dependencies>
 </project>

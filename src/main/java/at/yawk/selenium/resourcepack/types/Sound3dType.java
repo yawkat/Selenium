@@ -47,6 +47,10 @@ import at.yawk.selenium.ui.Icons;
 import at.yawk.selenium.ui.ResourceEditor;
 
 public class Sound3dType implements ResourceType {
+    private static final int LABEL_SPACING = 8;
+    private static final int TICK_COUNT = 24;
+    private static final int TICK_SIZE = 100;
+    
     static {
         ResourceTypes.registerResourceType(new Sound3dType());
     }
@@ -71,33 +75,34 @@ public class Sound3dType implements ResourceType {
                     private static final long serialVersionUID = 1L;
                     
                     private float x, y, z;
-                    private String playing;
+                    private SoundManager playing;
                     private JButton play;
                     private JButton stop;
+                    private JButton loadLwjgl;
                     private JLabel status;
                     
                     {
                         BoxLayout layout = new BoxLayout(this, BoxLayout.Y_AXIS);
                         setLayout(layout);
-                        for (int i = 0; i < 3; i++) {
+                        for (int i = 0; i < 2; i++) {
                             final int j = i;
                             DefaultBoundedRangeModel model = new DefaultBoundedRangeModel();
-                            model.setMinimum(-1000);
-                            model.setMaximum(1000);
+                            model.setMinimum(-TICK_SIZE * TICK_COUNT);
+                            model.setMaximum(TICK_SIZE * TICK_COUNT);
                             final JSlider slider = new JSlider(model);
-                            slider.setMinorTickSpacing(50);
-                            slider.setMajorTickSpacing(100);
+                            slider.setMinorTickSpacing(TICK_SIZE * LABEL_SPACING / 2);
+                            slider.setMajorTickSpacing(TICK_SIZE * LABEL_SPACING);
                             slider.setPaintTicks(true);
                             slider.setPaintLabels(true);
                             Hashtable<Integer, JLabel> labels = new Hashtable<>();
-                            for (int k = -1000; k <= 1000; k += 100) {
-                                labels.put(k, new JLabel(String.valueOf(k / 100)));
+                            for (int k = model.getMinimum(); k <= model.getMaximum(); k += TICK_SIZE * LABEL_SPACING) {
+                                labels.put(k, new JLabel(String.valueOf(k * LABEL_SPACING / slider.getMajorTickSpacing())));
                             }
                             slider.setLabelTable(labels);
                             slider.addChangeListener(new ChangeListener() {
                                 @Override
                                 public void stateChanged(ChangeEvent arg0) {
-                                    float v = slider.getValue() / 100F;
+                                    float v = slider.getValue() / TICK_SIZE;
                                     switch (j) {
                                     case 0:
                                         x = v;
@@ -106,7 +111,7 @@ public class Sound3dType implements ResourceType {
                                         y = v;
                                         break;
                                     case 2:
-                                        z = -v;
+                                        z = v;
                                         break;
                                     }
                                     updateSoundLocation();
@@ -140,10 +145,21 @@ public class Sound3dType implements ResourceType {
                         }));
                         add(controls);
                         buttons(false);
+                        
+                        loadLwjgl = new JButton(new AbstractAction(t("Load LWJGL library natives for better sound")) {
+                            @Override
+                            public void actionPerformed(ActionEvent arg0) {
+                                SoundManager.loadLwjgl();
+                                loadLwjgl.setEnabled(!SoundManager.isLwjglLoaded());
+                            }
+                        });
+                        loadLwjgl.setEnabled(!SoundManager.isLwjglLoaded());
+                        add(loadLwjgl);
                     }
                     
                     private void play() {
                         new Thread(new Runnable() {
+                            @SuppressWarnings("resource")
                             @Override
                             public void run() {
                                 try {
@@ -152,14 +168,14 @@ public class Sound3dType implements ResourceType {
                                     status.setText(t("Buffering..."));
                                     FileSystem f = resource.getFile();
                                     File buffered = f.getBuffered();
-                                    playing = SoundManager.play(buffered.toURI().toURL());
-                                    updateSoundLocation();
+                                    playing = new SoundManager().load(buffered.toURI().toURL()).setLocation(x, y, z).play();
                                     SoundManager.awaitProcess();
                                     do {
-                                        status.setText(Math.round(SoundManager.getMillisPlayed(playing) / 100F) / 10F + " s");
+                                        status.setText(Math.round(playing.getMillisPlayed() / 100F) / 10F + " s");
                                         Thread.sleep(100);
-                                    } while (!SoundManager.hasTerminated(playing));
+                                    } while (!playing.hasTerminated());
                                     f.clearBuffer();
+                                    playing.close();
                                     playing = null;
                                     buttons(false);
                                 } catch (IOException | InterruptedException e) {
@@ -170,7 +186,7 @@ public class Sound3dType implements ResourceType {
                     }
                     
                     private void stop() {
-                        SoundManager.terminate(playing);
+                        playing.terminate();
                     }
                     
                     private void buttons(boolean playing) {
@@ -183,7 +199,7 @@ public class Sound3dType implements ResourceType {
                     
                     private void updateSoundLocation() {
                         if (playing != null) {
-                            SoundManager.setLocation(playing, x, y, z);
+                            playing.setLocation(x, y, z);
                         }
                     }
                 };
