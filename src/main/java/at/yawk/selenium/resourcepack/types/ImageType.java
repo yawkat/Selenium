@@ -29,6 +29,7 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
@@ -126,7 +127,19 @@ public class ImageType implements ResourceType {
     @Override
     public boolean equals(Resource r1, Resource r2) {
         try {
-            return getPreview(r1).equals(getPreview(r2));
+            BufferedImage b1 = getPreview(r1);
+            BufferedImage b2 = getPreview(r2);
+            
+            if (b1.getWidth() != b2.getWidth() || b1.getHeight() != b2.getHeight()) {
+                return false;
+            }
+            
+            int[] rgb1 = new int[b1.getWidth() * b1.getHeight()];
+            b1.getRGB(0, 0, b1.getWidth(), b1.getHeight(), rgb1, 0, 1);
+            int[] rgb2 = new int[rgb1.length];
+            b2.getRGB(0, 0, b2.getWidth(), b2.getHeight(), rgb2, 0, 1);
+            
+            return Arrays.equals(rgb1, rgb2);
         } catch (IOException e) {
             return false;
         }
