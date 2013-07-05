@@ -43,7 +43,7 @@ public class McMeta {
         this(file, true);
     }
     
-    private JSONObject getRoot() throws McMetaException {
+    public JSONObject getRoot() throws McMetaException {
         if (rootObject == null) {
             JSONParser parser = new JSONParser();
             try (InputStream i = file.getInput()) {
@@ -53,27 +53,6 @@ public class McMeta {
             }
         }
         return rootObject;
-    }
-    
-    private String getValue0(String key) throws McMetaException {
-        String[] components = key.split("\\.");
-        JSONObject o = rootObject;
-        for (int i = 0; i < components.length; i++) {
-            if (i == components.length - 1) {
-                return (String) o.get(components[i]);
-            } else {
-                o = (JSONObject) o.get(components[i]);
-            }
-        }
-        throw new McMetaException();
-    }
-    
-    public String getValue(String id) throws McMetaException {
-        try {
-            return getValue0(id);
-        } catch (ClassCastException | NullPointerException e) {
-            throw new McMetaException(e);
-        }
     }
     
     public static class McMetaException extends Exception {

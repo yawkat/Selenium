@@ -32,6 +32,7 @@ import at.yawk.selenium.fs.Zip;
 import at.yawk.selenium.resourcepack.ResourceTree;
 import at.yawk.selenium.resourcepack.types.IcnsType;
 import at.yawk.selenium.resourcepack.types.ImageType;
+import at.yawk.selenium.resourcepack.types.McMetaType;
 import at.yawk.selenium.resourcepack.types.PropertyType;
 import at.yawk.selenium.resourcepack.types.Sound3dType;
 import at.yawk.selenium.ui.SeleniumSuite;
@@ -58,6 +59,7 @@ public class Selenium {
             Class.forName(Sound3dType.class.getName());
             Class.forName(PropertyType.class.getName());
             Class.forName(IcnsType.class.getName());
+            Class.forName(McMetaType.class.getName());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
