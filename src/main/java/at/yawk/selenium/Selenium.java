@@ -32,9 +32,9 @@ import at.yawk.selenium.fs.Zip;
 import at.yawk.selenium.resourcepack.ResourceTree;
 import at.yawk.selenium.resourcepack.types.IcnsType;
 import at.yawk.selenium.resourcepack.types.ImageType;
-import at.yawk.selenium.resourcepack.types.McMetaType;
 import at.yawk.selenium.resourcepack.types.PropertyType;
 import at.yawk.selenium.resourcepack.types.Sound3dType;
+import at.yawk.selenium.resourcepack.types.json.McMetaType;
 import at.yawk.selenium.ui.SeleniumSuite;
 
 public class Selenium {

@@ -1,43 +1,13 @@
-package at.yawk.selenium.resourcepack.types;
+package at.yawk.selenium.resourcepack.types.json;
 
-import static at.yawk.selenium.Strings.t;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
-import com.google.common.collect.Maps;
 
 import at.yawk.selenium.fs.Zip;
 import at.yawk.selenium.resourcepack.McMeta;
@@ -71,13 +41,20 @@ public class McMetaType implements ResourceType {
     @Override
     public ResourceEditor getEditor(final Resource resource) {
         try {
-            return getEditor(new McMeta(resource.getFile()), DEFAULTS_NONE);
+            return getEditor(new McMeta(resource.getFile()), McMetaDefaults.DEFAULTS_NONE);
         } catch (McMetaException e) {
             throw new IOError(e);
         }
     }
     
-    public ResourceEditor getEditor(final McMeta meta, final McMetaDefaults defaults) {
+    public ResourceEditor getEditor(McMeta meta, McMetaDefaults defaults) {
+        try {
+            return new MetaResourceEditor(meta, defaults);
+        } catch (McMetaException e) {
+            throw new IOError(e);
+        }
+        
+        /*
         return new ResourceEditor() {
             @SuppressWarnings("unchecked")
             @Override
@@ -189,6 +166,7 @@ public class McMetaType implements ResourceType {
                 }
             }
         };
+        */
     }
     
     public static void main(String[] args) throws IOException, McMetaException {
@@ -199,7 +177,7 @@ public class McMetaType implements ResourceType {
         }
         
         JFrame jFrame = new JFrame();
-        jFrame.add(new McMetaType().getEditor(new McMeta(Zip.toFileSystem(new File(args[0]))), DEFAULTS_TEXTURE).getEditor());
+        jFrame.add(new McMetaType().getEditor(new McMeta(Zip.toFileSystem(new File(args[0]))), McMetaDefaults.DEFAULTS_TEXTURE).getEditor());
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jFrame.pack();
         jFrame.setVisible(true);
@@ -209,91 +187,5 @@ public class McMetaType implements ResourceType {
     public boolean equals(Resource r1, Resource r2) {
         // TODO Auto-generated method stub
         return false;
-    }
-    
-    public static interface McMetaDefaults {
-        String getName();
-        
-        void addDefaults(JSONObject object);
-    }
-    
-    public static final McMetaDefaults DEFAULTS_NONE = new McMetaDefaults() {
-        @Override
-        public String getName() {
-            return "None";
-        }
-        
-        @Override
-        public void addDefaults(JSONObject object) {}
-    };
-    
-    public static final McMetaDefaults DEFAULTS_TEXTURE = new McMetaDefaults() {
-        @Override
-        public String getName() {
-            return "Texture";
-        }
-        
-        @SuppressWarnings("unchecked")
-        @Override
-        public void addDefaults(JSONObject object) {
-            JSONObject animation = putIfNotExists(object, "animation", new JSONObject());
-            putIfNotExists(animation, "frametime", 1);
-            putIfNotExists(animation, "width", 16);
-            putIfNotExists(animation, "height", 16);
-            JSONArray frames = putIfNotExists(animation, "frames", new JSONArray());
-            int ix = 0;
-            for (Object o : frames) {
-                if (o instanceof JSONObject) {
-                    putIfNotExists((JSONObject) o, "time", 1);
-                    putIfNotExists((JSONObject) o, "index", ix);
-                }
-                ix++;
-            }
-            
-            JSONObject texture = putIfNotExists(object, "texture", new JSONObject());
-            putIfNotExists(texture, "blur", false);
-            putIfNotExists(texture, "clamp", false);
-        }
-    };
-    
-    @SuppressWarnings("unchecked")
-    private static <K, V> V putIfNotExists(Map<? super K, ? super V> map, K key, V value) {
-        if (!map.containsKey(key)) {
-            map.put(key, value);
-        }
-        return (V) map.get(key);
-    }
-    
-    @SuppressWarnings("unchecked")
-    private static <T> T deepClone(T original) {
-        if (original instanceof Set<?>) {
-            Set<Object> copy = new HashSet<>(((Set<?>) original).size());
-            for (Object o : ((Set<?>) original)) {
-                copy.add(deepClone(o));
-            }
-            return (T) copy;
-        }
-        if (original instanceof List<?>) {
-            List<Object> copy = original instanceof JSONArray ? new JSONArray() : new ArrayList<>(((List<?>) original).size());
-            for (Object o : ((List<?>) original)) {
-                copy.add(deepClone(o));
-            }
-            return (T) copy;
-        }
-        if (original instanceof Map<?, ?>) {
-            Map<Object, Object> copy = original instanceof JSONObject ? new JSONObject() : new HashMap<>(((Map<?, ?>) original).size());
-            for (Entry<?, ?> e : ((Map<?, ?>) original).entrySet()) {
-                copy.put(deepClone(e.getKey()), deepClone(e.getValue()));
-            }
-            return (T) copy;
-        }
-        if (original instanceof Cloneable) {
-            try {
-                Method method = Object.class.getDeclaredMethod("clone");
-                method.setAccessible(true);
-                return (T) method.invoke(original);
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {}
-        }
-        return original;
     }
 }
