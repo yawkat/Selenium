@@ -1,6 +1,9 @@
 package at.yawk.selenium.resourcepack.types.json;
 
+import static at.yawk.selenium.resourcepack.types.json.Util.e;
+
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.io.IOException;
 import java.util.Map.Entry;
@@ -27,6 +30,7 @@ class MetaResourceEditor implements ResourceEditor {
     public MetaResourceEditor(McMeta meta, McMetaDefaults defaults) throws McMetaException {
         data = meta.getRoot();
         withDefaults = Util.deepClone(data);
+        defaults.addDefaults(withDefaults);
     }
     
     @Override
@@ -49,7 +53,7 @@ class MetaResourceEditorComponent extends JPanel {
     }
     
     private void init() {
-        this.tree = new JTree(new Node(null, editor.data));
+        this.tree = new JTree(new Node(null, editor.data, editor.withDefaults));
         tree.setCellRenderer(new NodeCellRenderer());
         tree.setRootVisible(false);
         for (int row = 0; row < tree.getRowCount(); row++) {
@@ -70,16 +74,22 @@ class MetaResourceEditorComponent extends JPanel {
          */
         final Object key;
         /**
-         * Either a {@link String}, {@link Long}, {@link Double},
+         * Either a {@link String}, {@link Long}, {@link Double} or
          * {@link Boolean}
          */
-        final Object value;
+        final Object valueRegular;
+        /**
+         * Either a {@link String}, {@link Long}, {@link Double} or
+         * {@link Boolean}
+         */
+        final Object valueDefaults;
         Node[] children;
         
-        public Node(Node parent, Object key, Object value) {
+        public Node(Node parent, Object key, Object valueRegular, Object valueDefaults) {
             this.parent = parent;
             this.key = key;
-            this.value = value;
+            this.valueRegular = valueRegular;
+            this.valueDefaults = valueDefaults;
             this.children = createChildren();
             setAllowsChildren(canHaveChildren());
             
@@ -88,29 +98,29 @@ class MetaResourceEditorComponent extends JPanel {
             }
         }
         
-        public Node(Object key, Object value) {
-            this(null, key, value);
+        public Node(Object key, Object valueRegular, Object valueDefaults) {
+            this(null, key, valueRegular, valueDefaults);
         }
         
         private Node[] createChildren() {
-            if (value instanceof JSONArray) {
-                JSONArray v = (JSONArray) value;
+            if (valueDefaults instanceof JSONArray) {
+                JSONArray v = (JSONArray) valueDefaults;
                 Node[] children = new Node[v.size()];
                 int inx = 0;
                 for (Object object : v) {
-                    children[inx] = new Node(this, inx, object);
+                    children[inx] = new Node(this, inx, ((JSONArray) valueRegular).get(inx), object);
                     inx++;
                 }
                 return children;
             }
-            if (value instanceof JSONObject) {
-                JSONObject v = (JSONObject) value;
+            if (valueDefaults instanceof JSONObject) {
+                JSONObject v = (JSONObject) valueDefaults;
                 Node[] children = new Node[v.size()];
                 int inx = 0;
                 for (Object object : v.entrySet()) {
                     @SuppressWarnings("unchecked")
                     Entry<String, Object> entry = (Entry<String, Object>) object;
-                    children[inx] = new Node(this, entry.getKey(), entry.getValue());
+                    children[inx] = new Node(this, entry.getKey(), valueRegular == null ? null : ((JSONObject) valueRegular).get(entry.getKey()), entry.getValue());
                     inx++;
                 }
                 return children;
@@ -119,7 +129,7 @@ class MetaResourceEditorComponent extends JPanel {
         }
         
         boolean canHaveChildren() {
-            return value instanceof JSONArray || value instanceof JSONObject;
+            return valueDefaults instanceof JSONArray || valueDefaults instanceof JSONObject;
         }
     }
     
@@ -138,11 +148,20 @@ class MetaResourceEditorComponent extends JPanel {
                 v = null;
                 setIcon(new ImageIcon(Icons.getIcon("folder.png")));
             } else {
-                v = String.valueOf(node.value);
+                v = String.valueOf(node.valueDefaults);
                 setIcon(new ImageIcon(Icons.getIcon("page.png")));
             }
             
-            setText(v == null ? k : k + ": " + v);
+            if (selected) {
+                setText(v == null ? k : k + ": " + v);
+            } else {
+                if (node.valueRegular != null) {
+                    setText(v == null ? k : "<html><body>" + e(k) + ": <span color='#999999'>" + e(v));
+                } else {
+                    setText(v == null ? k : k + ": " + v);
+                    setForeground(new Color(0x999999));
+                }
+            }
             
             return c;
         }

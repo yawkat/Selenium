@@ -7,9 +7,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -28,14 +29,14 @@ class Util {
     static <T> T deepClone(T original) {
         if (original instanceof Set<?>) {
             Set<Object> copy = new HashSet<>(((Set<?>) original).size());
-            for (Object o : ((Set<?>) original)) {
+            for (Object o : (Set<?>) original) {
                 copy.add(deepClone(o));
             }
             return (T) copy;
         }
         if (original instanceof List<?>) {
             List<Object> copy = original instanceof JSONArray ? new JSONArray() : new ArrayList<>(((List<?>) original).size());
-            for (Object o : ((List<?>) original)) {
+            for (Object o : (List<?>) original) {
                 copy.add(deepClone(o));
             }
             return (T) copy;
@@ -55,5 +56,9 @@ class Util {
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {}
         }
         return original;
+    }
+    
+    static String e(String s) {
+        return StringEscapeUtils.escapeHtml4(s);
     }
 }
