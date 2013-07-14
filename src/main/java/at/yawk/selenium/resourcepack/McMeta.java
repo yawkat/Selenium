@@ -59,6 +59,10 @@ public class McMeta {
         return rootObject;
     }
     
+    public FileSystem getFile() {
+        return file;
+    }
+    
     public static class McMetaException extends Exception {
         private static final long serialVersionUID = 1L;
         

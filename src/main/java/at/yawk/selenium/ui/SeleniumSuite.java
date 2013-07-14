@@ -27,9 +27,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -79,10 +79,12 @@ public class SeleniumSuite extends JPanel {
             public void onResourceOpened(Resource resource) {
                 if (!resource.getFile().isDirectory()) {
                     if (openTabs.containsKey(resource)) {
-                        resourceEditor.setSelectedComponent(openTabs.get(resource));
-                    } else {
-                        addEditor(resource);
+                        try {
+                            resourceEditor.setSelectedComponent(openTabs.get(resource));
+                            return;
+                        } catch (IllegalArgumentException e) {}
                     }
+                    addEditor(resource);
                 }
             }
         });

@@ -18,6 +18,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import at.yawk.selenium.fs.FileSystem;
 import at.yawk.selenium.resourcepack.McMeta;
 import at.yawk.selenium.resourcepack.McMeta.McMetaException;
 import at.yawk.selenium.ui.Icons;
@@ -26,8 +27,10 @@ import at.yawk.selenium.ui.ResourceEditor;
 class MetaResourceEditor implements ResourceEditor {
     final JSONObject data;
     final JSONObject withDefaults;
+    final FileSystem file;
     
     public MetaResourceEditor(McMeta meta, McMetaDefaults defaults) throws McMetaException {
+        this.file = meta.getFile();
         data = meta.getRoot();
         withDefaults = Util.deepClone(data);
         defaults.addDefaults(withDefaults);
@@ -55,8 +58,8 @@ class MetaResourceEditorComponent extends JPanel {
     private void init() {
         this.tree = new JTree(new Node(null, editor.data, editor.withDefaults));
         tree.setCellRenderer(new NodeCellRenderer());
-        tree.setRootVisible(false);
-        tree.setShowsRootHandles(true);
+        tree.setRootVisible(true);
+        tree.setShowsRootHandles(false);
         for (int row = 0; row < tree.getRowCount(); row++) {
             tree.expandRow(row);
         }
@@ -160,6 +163,14 @@ class MetaResourceEditorComponent extends JPanel {
                     setText(v == null ? k : "<html><body>" + e(k) + ": <span color='#999999'>" + e(v));
                 } else {
                     setText(v == null ? k : k + ": " + v);
+                    setForeground(new Color(0x999999));
+                }
+            }
+            
+            // root
+            if (node.key == null) {
+                setText(editor.file.getName());
+                if (!sel && !editor.file.exists()) {
                     setForeground(new Color(0x999999));
                 }
             }
