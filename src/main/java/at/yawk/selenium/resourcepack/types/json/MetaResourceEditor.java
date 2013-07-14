@@ -56,6 +56,7 @@ class MetaResourceEditorComponent extends JPanel {
         this.tree = new JTree(new Node(null, editor.data, editor.withDefaults));
         tree.setCellRenderer(new NodeCellRenderer());
         tree.setRootVisible(false);
+        tree.setShowsRootHandles(true);
         for (int row = 0; row < tree.getRowCount(); row++) {
             tree.expandRow(row);
         }
