@@ -33,13 +33,15 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
+import at.yawk.selenium.resourcepack.McMeta.McMetaException;
 import at.yawk.selenium.resourcepack.Resource;
 import at.yawk.selenium.resourcepack.ResourceType;
 import at.yawk.selenium.resourcepack.ResourceTypes;
+import at.yawk.selenium.resourcepack.types.json.McMetaDefaults;
+import at.yawk.selenium.resourcepack.types.json.McMetaType;
 import at.yawk.selenium.ui.ResourceEditor;
 
 public class ImageType implements ResourceType {
@@ -82,7 +84,9 @@ public class ImageType implements ResourceType {
                         Dimension size = new Dimension(Math.max(image.getWidth(), 350), image.getHeight());
                         original.setPreferredSize(size);
                         leftPane.setTopComponent(original);
-                        leftPane.setBottomComponent(new JLabel("Test"));
+                        try {
+                            leftPane.setBottomComponent(McMetaType.instance.getEditor(file.getMeta(), McMetaDefaults.DEFAULTS_TEXTURE).getEditor());
+                        } catch (McMetaException e) {}
                         leftPane.setPreferredSize(new Dimension(size.width, Integer.MAX_VALUE));
                         
                         main.setLayout(new LayoutManager() {

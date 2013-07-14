@@ -45,11 +45,15 @@ public class McMeta {
     
     public JSONObject getRoot() throws McMetaException {
         if (rootObject == null) {
-            JSONParser parser = new JSONParser();
-            try (InputStream i = file.getInput()) {
-                rootObject = (JSONObject) parser.parse(new InputStreamReader(i));
-            } catch (ParseException | IOException e) {
-                throw new McMetaException(e);
+            if (file.exists()) {
+                JSONParser parser = new JSONParser();
+                try (InputStream i = file.getInput()) {
+                    rootObject = (JSONObject) parser.parse(new InputStreamReader(i));
+                } catch (ParseException | IOException e) {
+                    throw new McMetaException(e);
+                }
+            } else {
+                rootObject = new JSONObject();
             }
         }
         return rootObject;
